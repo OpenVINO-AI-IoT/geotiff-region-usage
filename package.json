@@ -1,0 +1,14 @@
+{
+    "name": "geojson2location",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "geojson2location": "node geojson2location.js en"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "geojson-to-svg": "^1.0.3",
+    }
+}
