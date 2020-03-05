@@ -8,3 +8,7 @@
 
 > sudo apt-get install qgis python-matplotlib python-scipy
 
+## SVG Map Generated from Map of Hungary
+
+![Hungary Map Administrative Regions](./administrative_regions.svg)
+

@@ -1,17 +1,16 @@
 var fs = require('fs');
 const process = require('process');
-var data = fs.readFileSync(process.argv[1]);
+var data = fs.readFileSync(process.argv[2]);
 var data = JSON.parse(data);
+
+var geojson2svg = require('geojson-to-svg'); // factory
+// if you want to re-use the renderer
+var Renderer    = geojson2svg.Renderer;
+
 // ES5
 var locations = [];
 
-var language = process.argv[2];
-
-if (data['features'][0]['properties'].hasOwnProperty('name_' + language.toLowerCase())) {
-    language = "name_" + language.toLowerCase();
-} else {
-    process.exit();
-}
+var language = process.argv[3];
 
 class Haversine {
 
@@ -88,74 +87,12 @@ Released under MIT license - https://opensource.org/licenses/MIT */
 
 }
 
-data['features'].forEach(element => {
-    const {properties, geometry} = element;
-    const {coordinates} = geometry;
-    const {iata_code, className, id} = properties;
+var svgString = geojson2svg()
+  .styles({ 'MultiPolygon' : { fill: '#000000', stroke: '#000000', weight: 0.3 } })
+  .projection(function(coord) {
+    return [(coord[0] + 180.3)*3.697541135, (-coord[1] + 83.9)*3.878341728];
+  })
+  .data(data)
+  .render();
 
-    locations.push({
-        'Dest': properties[language],
-        'ID': iata_code,
-        'Latitude': coordinates[1],
-        'Longitude': coordinates[0],
-        'Distances': null,
-        'Scale': null,
-        'Hex': null,
-        'Sort_Order': null
-    });
-});
-
-var distances = locations.map((location, index) => {
-    var markers = locations.slice();
-
-    var net_distance = 0.0;
-    
-    markers.map((marker, j) => {
-        var dist = Haversine.getDistanceFromLatLng(location['Latitude'], location['Longitude'], marker['Latitude'], marker['Longitude']);
-        net_distance += dist;
-    });
-
-    location['Distances'] = net_distance;
-    
-    return location;
-});
-
-function MinMaxScaler(distances) {
-    var min_dist = Math.min.apply(null, distances);
-    var max_dist = Math.max.apply(null, distances);
-
-    var scale = distances.map((dist) => {
-        return Math.round((dist - min_dist) / (max_dist - min_dist) * (19 - 0));
-    });
-
-    return scale;
-}
-
-var distances_array = distances.map((distance) => {
-    return distance['Distances'];
-});
-
-var scales_array = MinMaxScaler(distances_array);
-
-var scales = distances.map((distance, index) => {
-    distance['Scale'] = scales_array[index];
-
-    return distance;
-});
-
-var scaled_data = {};
-
-scales.map((location) => {
-    if (!scaled_data.hasOwnProperty(location['Scale'])) {
-        scaled_data[location['Scale']] = [];
-    }
-
-    scaled_data[location['Scale']].push(location);
-});
-
-fs.writeFileSync('map_distances.js', 
-"export default {\n\
-    data: " + JSON.stringify(Object.values(scaled_data)) + "\n\
-}");
-
-console.log("`map_distances.js` file has been created");
+fs.writeFileSync('./administrative_regions.svg', svgString);
