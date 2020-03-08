@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "geojson2location": "node geojson2location.js ./administrative_regions.geojson en"
+    "geojson2location": "node geojson2location.js ./administrative_regions.geojson en",
+    "draw_path": "node draw_path.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "geojson-to-svg": "^1.0.3"
+    "geojson-to-svg": "^1.0.3",
+    "jsdom": "^16.0.1"
   }
 }
